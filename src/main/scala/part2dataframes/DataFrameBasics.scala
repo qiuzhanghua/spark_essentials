@@ -45,7 +45,7 @@ object DataFrameBasics extends App {
 
   carsDFWithSchema.show()
 
-  val myRow = Row("chevrolet chevelle malibu", 18.0, 8L, 307.0, 130L, 3504L, 12.0, "1970-01-01", "USA");
+  val myRow = Row("chevrolet chevelle malibu", 18.0, 8L, 307.0, 130L, 3504L, 12.0, "1970-01-01", "USA")
 
   val cars = Seq(
     ("chevrolet chevelle malibu", 18.0, 8L, 307.0, 130L, 3504L, 12.0, "1970-01-01", "USA"),
@@ -70,4 +70,21 @@ object DataFrameBasics extends App {
 
   manualCarsDFWithImplicits.show()
 
+  val smartphones = Seq(
+    ("Samsung", "Galaxy S10", "Android", 12),
+    ("Apple", "iPhone X", "iOS", 13),
+  )
+  val phoneDF = smartphones.toDF("Make", "Model", "Platform", "Camera megs")
+
+  phoneDF.show()
+
+
+  val moviesDF = spark.read
+    .format("json")
+    .option("inferSchema", "true")
+    .load("src/main/resources/data/movies.json")
+
+  moviesDF.printSchema()
+
+  println(s"The movies DF has ${moviesDF.count()} rows")
 }
