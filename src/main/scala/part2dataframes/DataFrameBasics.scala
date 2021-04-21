@@ -2,7 +2,7 @@ package com.example
 package part2dataframes
 
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.{Row, SparkSession}
+import org.apache.spark.sql.{Row, SaveMode, SparkSession}
 
 object DataFrameBasics extends App {
 
@@ -87,4 +87,36 @@ object DataFrameBasics extends App {
   moviesDF.printSchema()
 
   println(s"The movies DF has ${moviesDF.count()} rows")
+
+
+  val stocksSchema = StructType(Array(
+    StructField("symbol", StringType),
+    StructField("date", DateType),
+    StructField("price", DoubleType)
+  ))
+  val stockDF = spark.read
+    .format("csv")
+    .schema(stocksSchema)
+    .option("dateFormat", "MMM d yyyy")
+    .option("header", "true")
+    .option("sep", ",")
+    .option("nullValue", "")
+    .load("src/main/resources/data/stocks.csv")
+  stockDF.show()
+
+  carsDFWithSchema.write
+    .mode(SaveMode.Overwrite)
+    .option("compression", "gzip") // brotli, uncompressed, lz4, gzip, lzo, snappy, none, zstd
+    .parquet("target/cars.parquet")
+
+  val employeesDF = spark.read
+    .format("jdbc")
+    .option("driver", "org.postgresql.Driver")
+    .option("url", "jdbc:postgresql://localhost:5432/app")
+    .option("user", "app")
+    .option("password", "app")
+    .option("dbtable", "public.employees")
+    .load()
+  employeesDF.show()
+
 }
