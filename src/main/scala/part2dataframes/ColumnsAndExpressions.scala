@@ -10,6 +10,7 @@ object ColumnsAndExpressions extends App {
     .appName("DF Columns and Expressions")
     .config("spark.master", "local")
     .getOrCreate()
+  spark.sparkContext.setLogLevel("WARN")
 
   val carsDF = spark.read
     .option("inferSchema", "true")
@@ -71,4 +72,20 @@ object ColumnsAndExpressions extends App {
   //    .json("src/main/resources/data/more_cars.json")
   //    .union(carsDF).show()
   carsDF.select("Origin").distinct().show()
+
+  val moviesDF = spark.read
+    .option("inferSchema", "true")
+    .json("src/main/resources/data/movies.json")
+  moviesDF.show()
+  val moviesDF2 = moviesDF.select("Title", "Release_date")
+  val moviesProfitDF = moviesDF.select(
+    col("Title"),
+    col("Release_date"),
+    expr("US_Gross + Worldwide_Gross + US_DVD_Sales").as("profit"))
+  moviesProfitDF.show()
+
+  moviesDF.select("Title", "IMDB_Rating")
+    .where(col("Major_Genre") === "Comedy" and col("IMDB_Rating") > 6)
+    .show()
+
 }
