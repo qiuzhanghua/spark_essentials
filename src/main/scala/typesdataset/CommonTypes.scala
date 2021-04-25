@@ -6,7 +6,7 @@ import org.apache.spark.sql.functions._
 
 object CommonTypes extends App {
   val spark = SparkSession.builder()
-    .appName("Aggregations and Grouping")
+    .appName("Common Type")
     .config("spark.master", "local[*]")
     .getOrCreate()
   spark.sparkContext.setLogLevel("WARN")
@@ -68,5 +68,7 @@ object CommonTypes extends App {
   val bigFilter = carNameFilters.fold(lit(false))((combinedFilter, nextFilter) => combinedFilter or nextFilter)
 
   carsDF.filter(bigFilter)
-  //    .show();
+  //    .show()
+
+
 }
