@@ -54,12 +54,9 @@ object Datasets extends App {
     StructField("Origin", StringType, nullable = false),
   ))
 
-  def readDF(filename: String) =
-    spark.read.option("inferSchema", "true")
-      .schema(carSchema)
-      .json(s"src/main/resources/data/$filename.json")
-
-  val carsDF = readDF("cars")
+  val carsDF = spark.read.option("inferSchema", "true")
+    .schema(carSchema)
+    .json(s"src/main/resources/data/cars.json")
   //  carsDF.show()
   //  implicit val carEncoder = Encoders.product[Car]
 
@@ -73,4 +70,39 @@ object Datasets extends App {
   carsDS.filter(_.Horsepower.getOrElse(0L) > 140).count
   carsDS.map(_.Horsepower.getOrElse(0L)).reduce(_ + _) / carsCount
   carsDS.select(avg(col("Horsepower")))
+
+  case class Guitar(id: Long, make: String, model: String, guitarType: String)
+
+  case class GuitarPlayer(id: Long, name: String, guitars: Seq[Long], band: Long)
+
+  case class Band(id: Long, name: String, hometown: String, year: Long)
+
+  val guitars = spark.read.option("inferSchema", "true")
+    .json("src/main/resources/data/guitars.json").as[Guitar]
+  //  guitars.show()
+
+  val guitarPlayers = spark.read.option("inferSchema", "true")
+    .json("src/main/resources/data/guitarPlayers.json").as[GuitarPlayer]
+  //  guitarPlayers.show()
+
+  val bands = spark.read.option("inferSchema", "true")
+    .json("src/main/resources/data/bands.json").as[Band]
+  //  bands.show()
+
+  val guitarPlayerBandsDS: Dataset[(GuitarPlayer, Band)] = guitarPlayers.joinWith(bands,
+    guitarPlayers.col("band") === bands.col("id"),
+    "inner"
+  )
+  //  guitarPlayerBandsDS.show()
+
+  guitarPlayers.joinWith(guitars,
+    array_contains(guitarPlayers.col("guitars"), guitars.col("id")),
+    "outer"
+  )
+  //    .show()
+
+  val carsGroupByOrigin = carsDS
+    .groupByKey(_.Origin)
+    .count()
+ //   carsGroupByOrigin.show()
 }
